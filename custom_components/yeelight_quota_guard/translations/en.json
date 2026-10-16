@@ -1,0 +1,220 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Yeelight Quota Guard",
+        "description": "To restart a bulb from Home Assistant, the guard needs each bulb's miIO token. Get them all at once from your Xiaomi account, or type them one by one.",
+        "menu_options": {
+          "cloud": "From my Xiaomi account (recommended)",
+          "manual": "Type a token by hand"
+        }
+      },
+      "cloud": {
+        "title": "Xiaomi account",
+        "description": "The account the bulbs were added with in Mi Home or the Yeelight app. The password is used only for this request and is not saved.",
+        "data": {
+          "username": "Email, phone or Xiaomi ID",
+          "password": "Password",
+          "country": "Server"
+        },
+        "data_description": {
+          "country": "The region chosen in the Mi Home app. Europe is usually Germany."
+        }
+      },
+      "cloud_done": {
+        "title": "Bulbs to guard",
+        "description": "**{found}** of your {total} Yeelight bulbs are in this Xiaomi account. The ticked ones will be guarded; untick any you want to leave out.\n\n**No token in this account: {without_count}**{without}\n\nAny of those can be added by hand later, from the integration's options.",
+        "data": {
+          "watch": "Bulbs to guard"
+        }
+      },
+      "manual": {
+        "title": "Token by hand",
+        "description": "Pick the bulb and paste its 32-character miIO token. The bulb is asked straight away, so a wrong token is caught here.",
+        "data": {
+          "bulb": "Bulb",
+          "token": "Token"
+        }
+      },
+      "manual_more": {
+        "title": "Bulb added",
+        "menu_options": {
+          "manual": "Add another bulb",
+          "finish": "Finish"
+        }
+      },
+      "cloud_captcha": {
+        "title": "Xiaomi captcha",
+        "description": "Xiaomi wants to make sure a person is signing in. Type the characters in the picture.\n\n![captcha]({image})",
+        "data": {
+          "code": "Characters"
+        }
+      },
+      "cloud_code": {
+        "title": "Xiaomi verification code",
+        "description": "Xiaomi has sent a code to {address}. Type it here. It expires in a few minutes.",
+        "data": {
+          "code": "Code"
+        }
+      }
+    },
+    "error": {
+      "verification": "Xiaomi wants to confirm this sign-in. Open this link, confirm it, and press Submit again: {url}\n\n{joke}\nBurburito code: {code}",
+      "invalid_auth": "Xiaomi did not accept that account or password.\n\n{joke}\nBurburito code: {code}",
+      "cannot_connect": "Could not reach the Xiaomi cloud. Check the server and try again in a minute.\n\n{joke}\nBurburito code: {code}",
+      "no_bulbs": "That account has no Yeelight bulb that Home Assistant's Yeelight integration knows. Check the server, or add the tokens by hand.\n\n{joke}\nBurburito code: {code}",
+      "invalid_token": "A token is 32 characters, letters a-f and numbers.\n\n{joke}\nBurburito code: {code}",
+      "cannot_reach_bulb": "The bulb did not answer. Is it powered and on the network?\n\n{joke}\nBurburito code: {code}",
+      "wrong_token": "The bulb answered, but not to that token: it belongs to another device.\n\n{joke}\nBurburito code: {code}",
+      "wrong_device": "Another device answers at that bulb's address. Wait until the Yeelight integration finds the bulb again.\n\n{joke}\nBurburito code: {code}",
+      "captcha_wrong": "Those characters did not match. Here is a new picture.\n\n{joke}\nBurburito code: {code}",
+      "code_wrong": "Xiaomi did not accept that code: it is wrong or has expired. Check it, or go back and start again to get a new one.\n\n{joke}\nBurburito code: {code}",
+      "cloud_refused": "Xiaomi stopped the sign-in for a reason this integration does not know yet. Try again in a few minutes; if it happens again, add the tokens by hand.\n\n{joke}\nBurburito code: {code}",
+      "nothing_chosen": "Tick at least one bulb.\n\n{joke}\nBurburito code: {code}"
+    },
+    "abort": {
+      "no_yeelight": "Set up your bulbs with Home Assistant's Yeelight integration first: the guard watches the bulbs that integration knows.",
+      "single_instance_allowed": "Already configured. Only a single configuration possible."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Yeelight Quota Guard",
+        "menu_options": {
+          "settings": "When to restart",
+          "manual": "Add or replace a token by hand",
+          "cloud": "Fetch tokens again from my Xiaomi account"
+        }
+      },
+      "settings": {
+        "title": "When to restart",
+        "data": {
+          "repair": "Repair locked bulbs",
+          "prevent": "Restart before they lock",
+          "prevent_after_days": "Restart after this many days powered on",
+          "window_start": "Quiet window from",
+          "window_end": "Quiet window until",
+          "only_when_off": "Only while the light is off",
+          "scan_minutes": "Check every (minutes)"
+        },
+        "data_description": {
+          "repair": "A bulb past 49.7 days is restarted at once, at any hour: it no longer obeys Home Assistant anyway.",
+          "prevent": "Bulbs close to the limit are restarted inside the quiet window.",
+          "prevent_after_days": "The lock comes at 49.7 days. 45 leaves several nights to find the light off.",
+          "only_when_off": "A restart keeps the light as it was, but this avoids touching a light someone is using."
+        }
+      },
+      "cloud": {
+        "title": "Xiaomi account",
+        "description": "The account the bulbs were added with in Mi Home or the Yeelight app. The password is used only for this request and is not saved.",
+        "data": {
+          "username": "Email, phone or Xiaomi ID",
+          "password": "Password",
+          "country": "Server"
+        },
+        "data_description": {
+          "country": "The region chosen in the Mi Home app. Europe is usually Germany."
+        }
+      },
+      "cloud_done": {
+        "title": "Bulbs to guard",
+        "description": "**{found}** of your {total} Yeelight bulbs are in this Xiaomi account. The ticked ones will be guarded; untick any you want to leave out.\n\n**No token in this account: {without_count}**{without}\n\nAny of those can be added by hand later, from the integration's options.",
+        "data": {
+          "watch": "Bulbs to guard"
+        }
+      },
+      "manual": {
+        "title": "Token by hand",
+        "description": "Pick the bulb and paste its 32-character miIO token. The bulb is asked straight away, so a wrong token is caught here.",
+        "data": {
+          "bulb": "Bulb",
+          "token": "Token"
+        }
+      },
+      "cloud_captcha": {
+        "title": "Xiaomi captcha",
+        "description": "Xiaomi wants to make sure a person is signing in. Type the characters in the picture.\n\n![captcha]({image})",
+        "data": {
+          "code": "Characters"
+        }
+      },
+      "cloud_code": {
+        "title": "Xiaomi verification code",
+        "description": "Xiaomi has sent a code to {address}. Type it here. It expires in a few minutes.",
+        "data": {
+          "code": "Code"
+        }
+      }
+    },
+    "error": {
+      "verification": "Xiaomi wants to confirm this sign-in. Open this link, confirm it, and press Submit again: {url}\n\n{joke}\nBurburito code: {code}",
+      "invalid_auth": "Xiaomi did not accept that account or password.\n\n{joke}\nBurburito code: {code}",
+      "cannot_connect": "Could not reach the Xiaomi cloud. Check the server and try again in a minute.\n\n{joke}\nBurburito code: {code}",
+      "no_bulbs": "That account has no Yeelight bulb that Home Assistant's Yeelight integration knows. Check the server, or add the tokens by hand.\n\n{joke}\nBurburito code: {code}",
+      "invalid_token": "A token is 32 characters, letters a-f and numbers.\n\n{joke}\nBurburito code: {code}",
+      "cannot_reach_bulb": "The bulb did not answer. Is it powered and on the network?\n\n{joke}\nBurburito code: {code}",
+      "wrong_token": "The bulb answered, but not to that token: it belongs to another device.\n\n{joke}\nBurburito code: {code}",
+      "wrong_device": "Another device answers at that bulb's address. Wait until the Yeelight integration finds the bulb again.\n\n{joke}\nBurburito code: {code}",
+      "captcha_wrong": "Those characters did not match. Here is a new picture.\n\n{joke}\nBurburito code: {code}",
+      "code_wrong": "Xiaomi did not accept that code: it is wrong or has expired. Check it, or go back and start again to get a new one.\n\n{joke}\nBurburito code: {code}",
+      "cloud_refused": "Xiaomi stopped the sign-in for a reason this integration does not know yet. Try again in a few minutes; if it happens again, add the tokens by hand.\n\n{joke}\nBurburito code: {code}",
+      "nothing_chosen": "Tick at least one bulb.\n\n{joke}\nBurburito code: {code}"
+    }
+  },
+  "selector": {
+    "country": {
+      "options": {
+        "cn": "China",
+        "de": "Europe (Germany)",
+        "i2": "India",
+        "ru": "Russia",
+        "sg": "Singapore",
+        "us": "United States"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "powered_on": {
+        "name": "Powered on since"
+      },
+      "quota_lock": {
+        "name": "Quota lock expected",
+        "state_attributes": {
+          "affected": {
+            "name": "Affected by the lock",
+            "state": {
+              "true": "Yes",
+              "false": "No"
+            }
+          }
+        }
+      }
+    },
+    "button": {
+      "restart": {
+        "name": "Restart"
+      }
+    }
+  },
+  "issues": {
+    "missing_token": {
+      "title": "Yeelight bulbs stuck with no token",
+      "description": "Home Assistant cannot start these bulbs and asks to power cycle them: {bulbs}.\n\nThat is usually the 49.7-day firmware lock. The guard can restart them from here, but it has no token for them. Add one in Settings → Devices & services → Yeelight Quota Guard → Configure.\n\nDo you need to act? Yes.\n\n{joke}\nBurburito code: {code}"
+    },
+    "token_rejected": {
+      "title": "{bulb} no longer accepts its token",
+      "description": "{bulb} answers on the network but rejects the token the guard has. That happens when a bulb is reset or added again in the app. Fetch the tokens again from the integration's options.\n\nDo you need to act? Yes, or this bulb will not be restarted.\n\n{joke}\nBurburito code: {code}"
+    },
+    "restart_failed": {
+      "title": "{bulb} did not restart",
+      "description": "{bulb} was asked to restart but did not come back within 90 seconds with a fresh uptime. Switch it off at the wall for ten seconds.\n\nDo you need to act? Yes.\n\n{joke}\nBurburito code: {code}"
+    }
+  },
+  "exceptions": {
+    "restart_failed": {
+      "message": "{bulb} could not be restarted. {joke} Burburito code: {code}"
+    }
+  }
+}

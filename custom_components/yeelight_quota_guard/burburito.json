@@ -1,0 +1,213 @@
+{
+  "proyecto": {
+    "id": 27,
+    "slug": "yeelight-quota-guard",
+    "nombre": "Yeelight Quota Guard, la integración HACS que reinicia las Yeelight antes del bloqueo de los 49,7 días",
+    "repo": "https://github.com/Nebur692/ha-yeelight-quota-guard",
+    "fuente": "/mnt/cache/ESXI/docker/apps/ha-yeelight-quota-guard/custom_components/yeelight_quota_guard/burburito.json"
+  },
+  "modulos": [
+    {
+      "id": 1,
+      "slug": "guardia",
+      "nombre": "El vigilante",
+      "descripcion": "El coordinador que lee cada bombilla por miIO, decide si toca reiniciarla, la reinicia, le devuelve el encendido y crea los avisos de Reparaciones (coordinator.py), y el botón Reiniciar de cada bombilla (button.py)."
+    },
+    {
+      "id": 2,
+      "slug": "configuracion",
+      "nombre": "La configuración",
+      "descripcion": "El asistente y las opciones (config_flow.py): traer los tokens de la nube de Xiaomi (cloud.py) o escribirlos a mano, comprobados contra la bombilla antes de guardarlos."
+    }
+  ],
+  "acciones": [],
+  "codigos": [
+    {
+      "modulo": "guardia",
+      "accion": "vigilar",
+      "causa": "falta-config",
+      "severidad": "aviso",
+      "actuar": true,
+      "titulo": "Bombillas atascadas sin token",
+      "explicacion": "La integración Yeelight de HA reintenta arrancar estas bombillas con el aviso «try power cycling», que es el síntoma del bloqueo de los 49,7 días, y el guardián no tiene su token para reiniciarlas.",
+      "que_hacer": "Añadir el token en las opciones de la integración (a mano o desde la cuenta de Xiaomi), o quitarles la corriente diez segundos.",
+      "origen": "custom_components/yeelight_quota_guard/coordinator.py"
+    },
+    {
+      "modulo": "guardia",
+      "accion": "vigilar",
+      "causa": "credencial-invalida",
+      "severidad": "aviso",
+      "actuar": true,
+      "titulo": "La bombilla rechaza su token",
+      "explicacion": "Contesta al saludo miIO pero no a la petición cifrada, tres comprobaciones seguidas: el token guardado ya no es el suyo (se restableció o se volvió a añadir en la app).",
+      "que_hacer": "Volver a traer los tokens desde las opciones de la integración.",
+      "origen": "custom_components/yeelight_quota_guard/coordinator.py"
+    },
+    {
+      "modulo": "guardia",
+      "accion": "vigilar",
+      "causa": "firmware-colgado",
+      "severidad": "error",
+      "actuar": true,
+      "titulo": "La bombilla no se ha reiniciado",
+      "explicacion": "Aceptó miIO.reboot pero en 90 segundos no volvió con el contador de tiempo encendida a cero.",
+      "que_hacer": "Quitarle la corriente desde el interruptor diez segundos.",
+      "origen": "custom_components/yeelight_quota_guard/coordinator.py"
+    },
+    {
+      "modulo": "guardia",
+      "accion": "accionar-dispositivo",
+      "causa": "dispositivo-mudo",
+      "severidad": "aviso",
+      "actuar": true,
+      "titulo": "La bombilla no ha aceptado el reinicio",
+      "explicacion": "Al pulsar Reiniciar (o al reiniciarla el guardián), la bombilla no contestó por miIO: sin corriente, fuera de la WiFi o todavía sin dirección conocida.",
+      "que_hacer": "Comprobar que tiene corriente y está en la red, y volver a probar.",
+      "origen": "custom_components/yeelight_quota_guard/coordinator.py"
+    },
+    {
+      "modulo": "guardia",
+      "accion": "accionar-dispositivo",
+      "causa": "conflicto-estado",
+      "severidad": "aviso",
+      "actuar": true,
+      "titulo": "Tras el reinicio no se pudo devolver el encendido",
+      "explicacion": "La bombilla volvió del reinicio en otro estado (encendida o apagada) y la orden de devolverla a como estaba no surtió efecto. Solo queda en el registro.",
+      "que_hacer": "Encenderla o apagarla a mano.",
+      "origen": "custom_components/yeelight_quota_guard/coordinator.py"
+    },
+    {
+      "modulo": "configuracion",
+      "accion": "verificar-identidad",
+      "causa": "rechazo-remoto",
+      "severidad": "aviso",
+      "actuar": true,
+      "titulo": "Xiaomi pide confirmar el inicio de sesión",
+      "explicacion": "La nube de Xiaomi no da la sesión hasta confirmar el acceso en el enlace que devuelve (verificación en dos pasos de un acceso nuevo).",
+      "que_hacer": "Abrir el enlace que sale en el error, confirmar y volver a enviar.",
+      "origen": "custom_components/yeelight_quota_guard/config_flow.py"
+    },
+    {
+      "modulo": "configuracion",
+      "accion": "verificar-identidad",
+      "causa": "credencial-invalida",
+      "severidad": "aviso",
+      "actuar": true,
+      "titulo": "Cuenta o contraseña de Xiaomi incorrectas",
+      "explicacion": "La nube de Xiaomi contestó que la contraseña no corresponde a esa cuenta (su código 70016). Un captcha o un código por correo tienen sus propios códigos.",
+      "que_hacer": "Revisarlas; es la cuenta con la que se añadieron las bombillas en Mi Home o en la app de Yeelight.",
+      "origen": "custom_components/yeelight_quota_guard/config_flow.py"
+    },
+    {
+      "modulo": "configuracion",
+      "accion": "verificar-identidad",
+      "causa": "sin-conexion",
+      "severidad": "error",
+      "actuar": true,
+      "titulo": "No se llega a la nube de Xiaomi",
+      "explicacion": "Falló la conexión con la nube de Xiaomi o no devolvió la lista de aparatos.",
+      "que_hacer": "Comprobar el servidor elegido y volver a probar en un minuto.",
+      "origen": "custom_components/yeelight_quota_guard/config_flow.py"
+    },
+    {
+      "modulo": "configuracion",
+      "accion": "cambiar-ajustes",
+      "causa": "no-encontrado",
+      "severidad": "aviso",
+      "actuar": true,
+      "titulo": "La cuenta no tiene bombillas que conozca HA",
+      "explicacion": "Ninguna Yeelight de la cuenta coincide (por id de aparato) con las que tiene la integración Yeelight de HA.",
+      "que_hacer": "Comprobar el servidor (región) o añadir los tokens a mano.",
+      "origen": "custom_components/yeelight_quota_guard/config_flow.py"
+    },
+    {
+      "modulo": "configuracion",
+      "accion": "cambiar-ajustes",
+      "causa": "dato-invalido",
+      "severidad": "aviso",
+      "actuar": true,
+      "titulo": "El token no tiene el formato de un token",
+      "explicacion": "Un token miIO son 32 caracteres hexadecimales.",
+      "que_hacer": "Volver a copiarlo entero.",
+      "origen": "custom_components/yeelight_quota_guard/config_flow.py"
+    },
+    {
+      "modulo": "configuracion",
+      "accion": "cambiar-ajustes",
+      "causa": "dispositivo-mudo",
+      "severidad": "aviso",
+      "actuar": true,
+      "titulo": "La bombilla no contesta",
+      "explicacion": "Al comprobar el token, la bombilla no contestó al saludo miIO.",
+      "que_hacer": "Comprobar que tiene corriente y está en la red.",
+      "origen": "custom_components/yeelight_quota_guard/config_flow.py"
+    },
+    {
+      "modulo": "configuracion",
+      "accion": "cambiar-ajustes",
+      "causa": "credencial-invalida",
+      "severidad": "aviso",
+      "actuar": true,
+      "titulo": "El token es de otro aparato",
+      "explicacion": "La bombilla contesta al saludo pero no a la petición cifrada con ese token.",
+      "que_hacer": "Buscar el token de esa bombilla, o traerlos de la cuenta de Xiaomi.",
+      "origen": "custom_components/yeelight_quota_guard/config_flow.py"
+    },
+    {
+      "modulo": "configuracion",
+      "accion": "cambiar-ajustes",
+      "causa": "conflicto-estado",
+      "severidad": "aviso",
+      "actuar": true,
+      "titulo": "En esa dirección contesta otro aparato",
+      "explicacion": "El id que contesta en la IP de la bombilla no es el suyo: la dirección ha cambiado de dueño.",
+      "que_hacer": "Esperar a que la integración Yeelight vuelva a encontrar la bombilla.",
+      "origen": "custom_components/yeelight_quota_guard/config_flow.py"
+    },
+    {
+      "modulo": "configuracion",
+      "accion": "verificar-identidad",
+      "causa": "dato-invalido",
+      "severidad": "aviso",
+      "actuar": true,
+      "titulo": "El captcha de Xiaomi no coincide",
+      "explicacion": "Xiaomi pidió un captcha al iniciar sesión y los caracteres escritos no eran los de la imagen.",
+      "que_hacer": "Escribir los de la imagen nueva que sale con el error.",
+      "origen": "custom_components/yeelight_quota_guard/config_flow.py"
+    },
+    {
+      "modulo": "configuracion",
+      "accion": "verificar-identidad",
+      "causa": "codigo-caducado",
+      "severidad": "aviso",
+      "actuar": true,
+      "titulo": "Código de verificación de Xiaomi incorrecto o caducado",
+      "explicacion": "Xiaomi mandó un código por correo o SMS para confirmar el inicio de sesión y no aceptó el escrito.",
+      "que_hacer": "Revisarlo; si ha caducado, volver a empezar el asistente para que mande otro.",
+      "origen": "custom_components/yeelight_quota_guard/config_flow.py"
+    },
+    {
+      "modulo": "configuracion",
+      "accion": "verificar-identidad",
+      "causa": "respuesta-ilegible",
+      "severidad": "error",
+      "actuar": true,
+      "titulo": "Xiaomi para el inicio de sesión por un motivo desconocido",
+      "explicacion": "La nube de Xiaomi contestó con un código que el asistente no sabe tratar. El código de Xiaomi y el paso quedan en el registro de HA (aviso de custom_components.yeelight_quota_guard.config_flow).",
+      "que_hacer": "Mirar el registro para ver el código de Xiaomi y enseñar al asistente a tratarlo; mientras, añadir los tokens a mano.",
+      "origen": "custom_components/yeelight_quota_guard/config_flow.py"
+    },
+    {
+      "modulo": "configuracion",
+      "accion": "cambiar-ajustes",
+      "causa": "falta-config",
+      "severidad": "aviso",
+      "actuar": true,
+      "titulo": "No se ha marcado ninguna bombilla",
+      "explicacion": "En la lista de bombillas encontradas en la nube de Xiaomi se enviaron todas desmarcadas.",
+      "que_hacer": "Marcar al menos una; las demás se pueden añadir más tarde desde las opciones.",
+      "origen": "custom_components/yeelight_quota_guard/config_flow.py"
+    }
+  ]
+}

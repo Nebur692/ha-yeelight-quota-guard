@@ -1,0 +1,23 @@
+{
+  "domain": "yeelight_quota_guard",
+  "name": "Yeelight Quota Guard",
+  "after_dependencies": [
+    "yeelight"
+  ],
+  "codeowners": [
+    "@Nebur692"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/Nebur692/ha-yeelight-quota-guard",
+  "integration_type": "service",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/Nebur692/ha-yeelight-quota-guard/issues",
+  "loggers": [
+    "micloud"
+  ],
+  "requirements": [
+    "micloud>=0.5"
+  ],
+  "single_config_entry": true,
+  "version": "1.0.0"
+}

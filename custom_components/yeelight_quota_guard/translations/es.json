@@ -1,0 +1,220 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Yeelight Quota Guard",
+        "description": "Para reiniciar una bombilla desde Home Assistant, el guardián necesita el token miIO de cada una. Puedes traerlos todos de una vez desde tu cuenta de Xiaomi o escribirlos uno a uno.",
+        "menu_options": {
+          "cloud": "Desde mi cuenta de Xiaomi (recomendado)",
+          "manual": "Escribir un token a mano"
+        }
+      },
+      "cloud": {
+        "title": "Cuenta de Xiaomi",
+        "description": "La cuenta con la que se añadieron las bombillas en Mi Home o en la app de Yeelight. La contraseña solo se usa para esta consulta y no se guarda.",
+        "data": {
+          "username": "Correo, teléfono o ID de Xiaomi",
+          "password": "Contraseña",
+          "country": "Servidor"
+        },
+        "data_description": {
+          "country": "La región elegida en la app Mi Home. En Europa suele ser Alemania."
+        }
+      },
+      "cloud_done": {
+        "title": "Bombillas que vigilar",
+        "description": "Hay **{found}** de tus {total} bombillas Yeelight en esta cuenta de Xiaomi. Las marcadas quedarán vigiladas; desmarca las que quieras dejar fuera.\n\n**Sin token en esta cuenta: {without_count}**{without}\n\nCualquiera de esas se puede añadir más tarde a mano, desde las opciones de la integración.",
+        "data": {
+          "watch": "Bombillas que vigilar"
+        }
+      },
+      "manual": {
+        "title": "Token a mano",
+        "description": "Elige la bombilla y pega su token miIO de 32 caracteres. Se le pregunta a la bombilla en el momento, así que un token equivocado se detecta aquí.",
+        "data": {
+          "bulb": "Bombilla",
+          "token": "Token"
+        }
+      },
+      "manual_more": {
+        "title": "Bombilla añadida",
+        "menu_options": {
+          "manual": "Añadir otra bombilla",
+          "finish": "Terminar"
+        }
+      },
+      "cloud_captcha": {
+        "title": "Captcha de Xiaomi",
+        "description": "Xiaomi quiere asegurarse de que quien entra es una persona. Escribe los caracteres de la imagen.\n\n![captcha]({image})",
+        "data": {
+          "code": "Caracteres"
+        }
+      },
+      "cloud_code": {
+        "title": "Código de verificación de Xiaomi",
+        "description": "Xiaomi ha mandado un código a {address}. Escríbelo aquí. Caduca en unos minutos.",
+        "data": {
+          "code": "Código"
+        }
+      }
+    },
+    "error": {
+      "verification": "Xiaomi quiere confirmar este inicio de sesión. Abre este enlace, confírmalo y vuelve a pulsar Enviar: {url}\n\n{joke}\nCódigo burburito: {code}",
+      "invalid_auth": "Xiaomi no ha aceptado esa cuenta o esa contraseña.\n\n{joke}\nCódigo burburito: {code}",
+      "cannot_connect": "No se ha podido llegar a la nube de Xiaomi. Comprueba el servidor y vuelve a probar dentro de un minuto.\n\n{joke}\nCódigo burburito: {code}",
+      "no_bulbs": "Esa cuenta no tiene ninguna bombilla Yeelight de las que conoce la integración Yeelight de Home Assistant. Comprueba el servidor o añade los tokens a mano.\n\n{joke}\nCódigo burburito: {code}",
+      "invalid_token": "Un token tiene 32 caracteres: letras de la a a la f y números.\n\n{joke}\nCódigo burburito: {code}",
+      "cannot_reach_bulb": "La bombilla no ha contestado. ¿Tiene corriente y está conectada a la red?\n\n{joke}\nCódigo burburito: {code}",
+      "wrong_token": "La bombilla ha contestado, pero no a ese token: es de otro aparato.\n\n{joke}\nCódigo burburito: {code}",
+      "wrong_device": "En la dirección de esa bombilla contesta otro aparato. Espera a que la integración Yeelight vuelva a encontrarla.\n\n{joke}\nCódigo burburito: {code}",
+      "captcha_wrong": "Esos caracteres no coinciden. Aquí tienes una imagen nueva.\n\n{joke}\nCódigo burburito: {code}",
+      "code_wrong": "Xiaomi no ha aceptado ese código: no es correcto o ha caducado. Revísalo, o vuelve a empezar para que te mande otro.\n\n{joke}\nCódigo burburito: {code}",
+      "cloud_refused": "Xiaomi ha parado el inicio de sesión por un motivo que esta integración aún no conoce. Vuelve a probar en unos minutos; si se repite, añade los tokens a mano.\n\n{joke}\nCódigo burburito: {code}",
+      "nothing_chosen": "Marca al menos una bombilla.\n\n{joke}\nCódigo burburito: {code}"
+    },
+    "abort": {
+      "no_yeelight": "Primero configura tus bombillas con la integración Yeelight de Home Assistant: el guardián vigila las bombillas que conoce esa integración.",
+      "single_instance_allowed": "Ya está configurado. Solo se permite una configuración."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Yeelight Quota Guard",
+        "menu_options": {
+          "settings": "Cuándo reiniciar",
+          "manual": "Añadir o cambiar un token a mano",
+          "cloud": "Volver a traer los tokens de mi cuenta de Xiaomi"
+        }
+      },
+      "settings": {
+        "title": "Cuándo reiniciar",
+        "data": {
+          "repair": "Arreglar las bombillas bloqueadas",
+          "prevent": "Reiniciar antes de que se bloqueen",
+          "prevent_after_days": "Reiniciar tras estos días encendida",
+          "window_start": "Franja tranquila desde",
+          "window_end": "Franja tranquila hasta",
+          "only_when_off": "Solo con la luz apagada",
+          "scan_minutes": "Comprobar cada (minutos)"
+        },
+        "data_description": {
+          "repair": "Una bombilla que pasa de 49,7 días se reinicia en el momento, a cualquier hora: de todas formas ya no obedece a Home Assistant.",
+          "prevent": "Las que se acercan al límite se reinician dentro de la franja tranquila.",
+          "prevent_after_days": "El bloqueo llega a los 49,7 días. Con 45 quedan varias noches para pillar la luz apagada.",
+          "only_when_off": "El reinicio deja la luz como estaba, pero así no se toca una luz que alguien está usando."
+        }
+      },
+      "cloud": {
+        "title": "Cuenta de Xiaomi",
+        "description": "La cuenta con la que se añadieron las bombillas en Mi Home o en la app de Yeelight. La contraseña solo se usa para esta consulta y no se guarda.",
+        "data": {
+          "username": "Correo, teléfono o ID de Xiaomi",
+          "password": "Contraseña",
+          "country": "Servidor"
+        },
+        "data_description": {
+          "country": "La región elegida en la app Mi Home. En Europa suele ser Alemania."
+        }
+      },
+      "cloud_done": {
+        "title": "Bombillas que vigilar",
+        "description": "Hay **{found}** de tus {total} bombillas Yeelight en esta cuenta de Xiaomi. Las marcadas quedarán vigiladas; desmarca las que quieras dejar fuera.\n\n**Sin token en esta cuenta: {without_count}**{without}\n\nCualquiera de esas se puede añadir más tarde a mano, desde las opciones de la integración.",
+        "data": {
+          "watch": "Bombillas que vigilar"
+        }
+      },
+      "manual": {
+        "title": "Token a mano",
+        "description": "Elige la bombilla y pega su token miIO de 32 caracteres. Se le pregunta a la bombilla en el momento, así que un token equivocado se detecta aquí.",
+        "data": {
+          "bulb": "Bombilla",
+          "token": "Token"
+        }
+      },
+      "cloud_captcha": {
+        "title": "Captcha de Xiaomi",
+        "description": "Xiaomi quiere asegurarse de que quien entra es una persona. Escribe los caracteres de la imagen.\n\n![captcha]({image})",
+        "data": {
+          "code": "Caracteres"
+        }
+      },
+      "cloud_code": {
+        "title": "Código de verificación de Xiaomi",
+        "description": "Xiaomi ha mandado un código a {address}. Escríbelo aquí. Caduca en unos minutos.",
+        "data": {
+          "code": "Código"
+        }
+      }
+    },
+    "error": {
+      "verification": "Xiaomi quiere confirmar este inicio de sesión. Abre este enlace, confírmalo y vuelve a pulsar Enviar: {url}\n\n{joke}\nCódigo burburito: {code}",
+      "invalid_auth": "Xiaomi no ha aceptado esa cuenta o esa contraseña.\n\n{joke}\nCódigo burburito: {code}",
+      "cannot_connect": "No se ha podido llegar a la nube de Xiaomi. Comprueba el servidor y vuelve a probar dentro de un minuto.\n\n{joke}\nCódigo burburito: {code}",
+      "no_bulbs": "Esa cuenta no tiene ninguna bombilla Yeelight de las que conoce la integración Yeelight de Home Assistant. Comprueba el servidor o añade los tokens a mano.\n\n{joke}\nCódigo burburito: {code}",
+      "invalid_token": "Un token tiene 32 caracteres: letras de la a a la f y números.\n\n{joke}\nCódigo burburito: {code}",
+      "cannot_reach_bulb": "La bombilla no ha contestado. ¿Tiene corriente y está conectada a la red?\n\n{joke}\nCódigo burburito: {code}",
+      "wrong_token": "La bombilla ha contestado, pero no a ese token: es de otro aparato.\n\n{joke}\nCódigo burburito: {code}",
+      "wrong_device": "En la dirección de esa bombilla contesta otro aparato. Espera a que la integración Yeelight vuelva a encontrarla.\n\n{joke}\nCódigo burburito: {code}",
+      "captcha_wrong": "Esos caracteres no coinciden. Aquí tienes una imagen nueva.\n\n{joke}\nCódigo burburito: {code}",
+      "code_wrong": "Xiaomi no ha aceptado ese código: no es correcto o ha caducado. Revísalo, o vuelve a empezar para que te mande otro.\n\n{joke}\nCódigo burburito: {code}",
+      "cloud_refused": "Xiaomi ha parado el inicio de sesión por un motivo que esta integración aún no conoce. Vuelve a probar en unos minutos; si se repite, añade los tokens a mano.\n\n{joke}\nCódigo burburito: {code}",
+      "nothing_chosen": "Marca al menos una bombilla.\n\n{joke}\nCódigo burburito: {code}"
+    }
+  },
+  "selector": {
+    "country": {
+      "options": {
+        "cn": "China",
+        "de": "Europa (Alemania)",
+        "i2": "India",
+        "ru": "Rusia",
+        "sg": "Singapur",
+        "us": "Estados Unidos"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "powered_on": {
+        "name": "Encendida desde"
+      },
+      "quota_lock": {
+        "name": "Bloqueo previsto",
+        "state_attributes": {
+          "affected": {
+            "name": "Le afecta el bloqueo",
+            "state": {
+              "true": "Sí",
+              "false": "No"
+            }
+          }
+        }
+      }
+    },
+    "button": {
+      "restart": {
+        "name": "Reiniciar"
+      }
+    }
+  },
+  "issues": {
+    "missing_token": {
+      "title": "Bombillas Yeelight atascadas y sin token",
+      "description": "Home Assistant no consigue arrancar estas bombillas y pide quitarles la corriente: {bulbs}.\n\nSuele ser el bloqueo de firmware de los 49,7 días. El guardián puede reiniciarlas desde aquí, pero no tiene su token. Añádelo en Ajustes → Dispositivos y servicios → Yeelight Quota Guard → Configurar.\n\n¿Tienes que hacer algo? Sí.\n\n{joke}\nCódigo burburito: {code}"
+    },
+    "token_rejected": {
+      "title": "{bulb} ya no acepta su token",
+      "description": "{bulb} contesta en la red, pero rechaza el token que tiene el guardián. Pasa cuando una bombilla se restablece o se vuelve a añadir en la app. Vuelve a traer los tokens desde las opciones de la integración.\n\n¿Tienes que hacer algo? Sí; si no, esta bombilla no se reiniciará.\n\n{joke}\nCódigo burburito: {code}"
+    },
+    "restart_failed": {
+      "title": "{bulb} no se ha reiniciado",
+      "description": "Se le pidió a {bulb} que se reiniciara, pero no ha vuelto en 90 segundos con el contador a cero. Quítale la corriente desde el interruptor durante diez segundos.\n\n¿Tienes que hacer algo? Sí.\n\n{joke}\nCódigo burburito: {code}"
+    }
+  },
+  "exceptions": {
+    "restart_failed": {
+      "message": "No se ha podido reiniciar {bulb}. {joke} Código burburito: {code}"
+    }
+  }
+}
