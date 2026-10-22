@@ -345,6 +345,50 @@ async def test_young_bulbs_are_not_asked_over_lan(hass: HomeAssistant, bulbs) ->
     assert bulb.lan_questions == 0
 
 
+async def test_a_young_bulb_stuck_two_polls_and_silent_is_repaired(hass: HomeAssistant, bulbs) -> None:
+    """22-10-2026: Salón 1, 7 days powered, never let Home Assistant back in after its restart."""
+    bulb = await bulbs(host="127.0.0.2", did=10, token=TOKEN_A, life=7 * DAY, power="off", lan="silent")
+    add_yeelight(hass, 10, "127.0.0.2", "Salón 1", **LOCKED)
+    events = async_capture_events(hass, EVENT_RESTARTED)
+    entry = guard_entry(hass, {10: TOKEN_A})
+    await _setup(hass, entry)
+    assert bulb.reboots == 0  # one poll could be Home Assistant's own retry about to work
+    assert bulb.lan_questions == 0
+
+    await _refresh(hass, entry)
+    assert bulb.reboots == 1
+    assert bulb.power == "off"
+    assert [(e.data["bulb"], e.data["reason"]) for e in events] == [("Salón 1", "repair")]
+
+    # Still stuck in the fake core entry: the six-hour gap keeps it from looping.
+    for _ in range(3):
+        await _refresh(hass, entry)
+    assert bulb.reboots == 1
+
+
+async def test_a_young_bulb_stuck_but_answering_over_lan_is_left_alone(hass: HomeAssistant, bulbs) -> None:
+    bulb = await bulbs(host="127.0.0.2", did=10, token=TOKEN_A, life=7 * DAY, power="off")
+    add_yeelight(hass, 10, "127.0.0.2", "Salón 2", **LOCKED)
+    entry = guard_entry(hass, {10: TOKEN_A})
+    await _setup(hass, entry)
+    for _ in range(3):
+        await _refresh(hass, entry)
+    assert bulb.lan_questions == 3
+    assert bulb.reboots == 0
+
+
+async def test_a_young_bulb_only_unavailable_is_left_alone(hass: HomeAssistant, bulbs) -> None:
+    # Unavailable alone is a Wi-Fi drop as often as anything else: below the limit it needs the stuck entry.
+    bulb = await bulbs(host="127.0.0.2", did=10, token=TOKEN_A, life=7 * DAY, power="off", lan="silent")
+    yeelight = add_yeelight(hass, 10, "127.0.0.2", "Salón 3")
+    _core_light(hass, yeelight, "unavailable")
+    entry = guard_entry(hass, {10: TOKEN_A})
+    await _setup(hass, entry)
+    for _ in range(3):
+        await _refresh(hass, entry)
+    assert bulb.reboots == 0
+
+
 async def test_working_past_the_limit_is_learnt_and_remembered(hass: HomeAssistant, bulbs) -> None:
     bulb = await bulbs(host="127.0.0.2", did=10, token=TOKEN_A, life=60 * DAY, power="off", affected=False)
     add_yeelight(hass, 10, "127.0.0.2", "Led pasillo")

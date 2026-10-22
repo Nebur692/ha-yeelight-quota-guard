@@ -57,6 +57,8 @@ type GuardConfigEntry = ConfigEntry[GuardCoordinator]
 
 # Two polls in a row (30 min by default) before an unavailable light counts as locked.
 UNAVAILABLE_POLLS_FOR_LOCK = 2
+# Same for a core entry stuck asking to power cycle a bulb below the limit.
+STUCK_POLLS_FOR_HANG = 2
 
 
 @dataclass
@@ -74,6 +76,7 @@ class BulbState:
     token_failures: int = 0
     unavailable_polls: int = 0
     stuck: bool = False
+    stuck_polls: int = 0
     lan: LanAnswer | None = None
     # Seen working past 2^32 ms on this firmware: the lock does not affect it.
     immune: bool = False
@@ -268,6 +271,7 @@ class GuardCoordinator(DataUpdateCoordinator[dict[int, BulbState]]):
         bulb answers us over miIO, counted in polls so a Wi-Fi blip is not one.
         """
         state.stuck = bool(link and link.stuck)
+        state.stuck_polls = state.stuck_polls + 1 if state.stuck and state.reachable else 0
         lights = self._core_lights(link)
         if state.reachable and lights and all(self._unavailable(entity_id) for entity_id in lights):
             state.unavailable_polls += 1
@@ -275,9 +279,14 @@ class GuardCoordinator(DataUpdateCoordinator[dict[int, BulbState]]):
             state.unavailable_polls = 0
 
     async def _ask_lan(self, state: BulbState) -> None:
-        """Past the limit, ask the bulb the way Home Assistant does: locked, or not affected."""
+        """Past the limit, or stuck below it, ask the bulb the way Home Assistant does."""
         state.lan = None
-        if not state.reachable or not state.host or state.life_s is None or state.life_s < QUOTA_LIMIT_S:
+        if (
+            not state.reachable
+            or not state.host
+            or state.life_s is None
+            or (state.life_s < QUOTA_LIMIT_S and state.stuck_polls < STUCK_POLLS_FOR_HANG)
+        ):
             state.immune = self._is_immune(state)
             return
         state.lan = await probe(state.host)
@@ -311,7 +320,9 @@ class GuardCoordinator(DataUpdateCoordinator[dict[int, BulbState]]):
 
     def _decide(self, state: BulbState, now: datetime, power: str | None) -> Reason | None:
         locked = state.stuck or state.lan is LanAnswer.LOCKED or state.unavailable_polls >= UNAVAILABLE_POLLS_FOR_LOCK
-        snapshot = Snapshot(state.life_s, power, state.last_restart, locked, state.immune)
+        # A bulb that still answers over LAN is left to the core integration's own retries.
+        hung = state.stuck_polls >= STUCK_POLLS_FOR_HANG and state.lan in (LanAnswer.UNKNOWN, LanAnswer.LOCKED)
+        snapshot = Snapshot(state.life_s, power, state.last_restart, locked, hung, state.immune)
         return decide(snapshot, self.settings, now)
 
     def _decisions(self, now: datetime) -> list[tuple[int, Reason]]:

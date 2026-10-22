@@ -8,7 +8,10 @@ exceeded" until the bulb restarts. Yeelight confirmed it on their forum in
 
 Two reasons to restart:
 - repair: the bulb is already past the limit. Restart now, whatever the time:
-  on the affected firmwares it no longer obeys Home Assistant anyway.
+  on the affected firmwares it no longer obeys Home Assistant anyway. Also a
+  bulb hung below the limit (seen on 22-10-2026: a colorc 7 days powered that
+  never let Home Assistant back in after a restart), with the same symptom and
+  the same cure.
 - prevent: the bulb is getting close (default 45 days). Restart inside a quiet
   window, and by default only while it is off, so nobody notices.
 """
@@ -56,6 +59,9 @@ class Snapshot:
     # Past 2^32 ms alone is not enough: several models (strips, color2) pass
     # it without locking, and restarting those would be for nothing.
     locked: bool = False
+    # Hung at any uptime: the core entry asked to power cycle it two polls in a
+    # row and the bulb did not answer over LAN either.
+    hung: bool = False
     # Seen working past the limit: nothing to prevent.
     immune: bool = False
 
@@ -76,7 +82,7 @@ def decide(snapshot: Snapshot, settings: Settings, now: datetime) -> Reason | No
         return None
     if snapshot.last_restart is not None and now - snapshot.last_restart < MIN_GAP_BETWEEN_RESTARTS:
         return None
-    if settings.repair and snapshot.life_s >= QUOTA_LIMIT_S and snapshot.locked:
+    if settings.repair and (snapshot.hung or (snapshot.life_s >= QUOTA_LIMIT_S and snapshot.locked)):
         return Reason.REPAIR
     if (
         settings.prevent

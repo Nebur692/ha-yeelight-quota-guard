@@ -6,7 +6,8 @@ locked bulb answers {"error": {"code": -1, "message": "client quota exceeded"}}
 Anything else - refused, silent, closed - proves nothing: some models (colorc)
 take a single LAN connection and Home Assistant already holds it.
 
-Asked only of bulbs past 2^32 ms, so it costs nothing to the rest.
+Asked only of bulbs past 2^32 ms, or of those whose core entry has been stuck
+for two polls, so it costs nothing to the rest.
 """
 
 from __future__ import annotations

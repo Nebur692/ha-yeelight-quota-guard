@@ -55,6 +55,17 @@ def test_decide(life, power, now, locked, expected) -> None:
     assert decide(Snapshot(life, power, locked=locked), SETTINGS, now) is expected
 
 
+def test_a_hung_bulb_is_repaired_at_any_uptime() -> None:
+    # 22-10-2026: Salón 1, 7 days powered, stuck after a restart of Home Assistant.
+    assert decide(Snapshot(7 * DAY, "off", hung=True), SETTINGS, NOON) is Reason.REPAIR
+    assert decide(Snapshot(7 * DAY, "on", hung=True), SETTINGS, NOON) is Reason.REPAIR
+    assert decide(Snapshot(7 * DAY, "off", hung=True), Settings(repair=False), NOON) is None
+    recent = NOON - MIN_GAP_BETWEEN_RESTARTS + timedelta(minutes=1)
+    assert decide(Snapshot(7 * DAY, "off", last_restart=recent, hung=True), SETTINGS, NOON) is None
+    # Locked alone still needs the limit: that is what stopped the nine restarts of 15-10.
+    assert decide(Snapshot(7 * DAY, "off", locked=True), SETTINGS, NOON) is None
+
+
 def test_repair_off_falls_back_to_prevention_in_the_window() -> None:
     settings = Settings(repair=False)
     assert decide(Snapshot(60 * DAY, "on"), settings, NOON) is None

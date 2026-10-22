@@ -101,7 +101,7 @@ Afterwards, **Configure** on the integration offers:
 
 | Option | Default | What it does |
 |---|---|---|
-| Repair locked bulbs | on | A bulb past 49.7 days that Home Assistant can no longer talk to (its Yeelight entry asks to power cycle it, or its light has been unavailable for two checks in a row) is restarted at once, at any hour: it no longer obeys Home Assistant anyway |
+| Repair locked bulbs | on | A bulb past 49.7 days that Home Assistant can no longer talk to (its Yeelight entry asks to power cycle it, or its light has been unavailable for two checks in a row) is restarted at once, at any hour: it no longer obeys Home Assistant anyway. So is a younger bulb whose Yeelight entry has asked to power cycle it for two checks in a row while it does not answer on the LAN either (seen after a Home Assistant restart: the bulb never let it back in) |
 | Restart before they lock | on | Bulbs close to the limit are restarted inside the quiet window |
 | Restart after this many days powered on | 45 | Leaves several nights to find the light off |
 | Quiet window | 03:00 – 05:00 | Can cross midnight; the same start and end means all day |
@@ -257,7 +257,7 @@ Después, **Configurar** en la integración ofrece:
 
 | Opción | Por defecto | Qué hace |
 |---|---|---|
-| Arreglar las bombillas bloqueadas | sí | Una bombilla que pasa de 49,7 días y con la que Home Assistant ya no puede hablar (su entrada de Yeelight pide quitarle la corriente, o su luz lleva dos comprobaciones seguidas no disponible) se reinicia en el momento, a cualquier hora: de todas formas ya no obedece a Home Assistant |
+| Arreglar las bombillas bloqueadas | sí | Una bombilla que pasa de 49,7 días y con la que Home Assistant ya no puede hablar (su entrada de Yeelight pide quitarle la corriente, o su luz lleva dos comprobaciones seguidas no disponible) se reinicia en el momento, a cualquier hora: de todas formas ya no obedece a Home Assistant. También una más joven cuya entrada de Yeelight lleva dos comprobaciones seguidas pidiendo quitarle la corriente y que tampoco contesta por la red local (visto tras reiniciar Home Assistant: la bombilla no le dejaba volver a entrar) |
 | Reiniciar antes de que se bloqueen | sí | Las que se acercan al límite se reinician dentro de la franja tranquila |
 | Reiniciar tras estos días encendida | 45 | Deja varias noches para pillar la luz apagada |
 | Franja tranquila | 03:00 – 05:00 | Puede cruzar la medianoche; el mismo inicio y fin significa todo el día |

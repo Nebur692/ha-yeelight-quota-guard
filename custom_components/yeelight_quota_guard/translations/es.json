@@ -99,7 +99,7 @@
           "scan_minutes": "Comprobar cada (minutos)"
         },
         "data_description": {
-          "repair": "Una bombilla que pasa de 49,7 días se reinicia en el momento, a cualquier hora: de todas formas ya no obedece a Home Assistant.",
+          "repair": "Una bombilla que pasa de 49,7 días se reinicia en el momento, a cualquier hora: de todas formas ya no obedece a Home Assistant. También una más joven para la que Home Assistant lleva dos comprobaciones seguidas pidiendo quitarle la corriente y que no contesta por la red local.",
           "prevent": "Las que se acercan al límite se reinician dentro de la franja tranquila.",
           "prevent_after_days": "El bloqueo llega a los 49,7 días. Con 45 quedan varias noches para pillar la luz apagada.",
           "only_when_off": "El reinicio deja la luz como estaba, pero así no se toca una luz que alguien está usando."

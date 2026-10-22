@@ -99,7 +99,7 @@
           "scan_minutes": "Check every (minutes)"
         },
         "data_description": {
-          "repair": "A bulb past 49.7 days is restarted at once, at any hour: it no longer obeys Home Assistant anyway.",
+          "repair": "A bulb past 49.7 days is restarted at once, at any hour: it no longer obeys Home Assistant anyway. So is a younger one Home Assistant has asked to power cycle for two checks in a row while it stays silent on the LAN.",
           "prevent": "Bulbs close to the limit are restarted inside the quiet window.",
           "prevent_after_days": "The lock comes at 49.7 days. 45 leaves several nights to find the light off.",
           "only_when_off": "A restart keeps the light as it was, but this avoids touching a light someone is using."
