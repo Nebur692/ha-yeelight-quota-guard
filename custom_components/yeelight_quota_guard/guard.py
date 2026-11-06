@@ -62,8 +62,12 @@ class Snapshot:
     # Hung at any uptime: the core entry asked to power cycle it two polls in a
     # row and the bulb did not answer over LAN either.
     hung: bool = False
-    # Seen working past the limit: nothing to prevent.
+    # Seen working past the limit: nothing to prevent, and its light going
+    # unavailable is not the quota lock (06-11-2026: a lamp15 on 2.0.8_0038 was
+    # restarted for a drop the restart could not cure).
     immune: bool = False
+    # The bulb itself answered "client quota exceeded": proof, immune or not.
+    quota_exceeded: bool = False
 
 
 def in_window(now: time, start: time, end: time) -> bool:
@@ -76,13 +80,23 @@ def in_window(now: time, start: time, end: time) -> bool:
     return now >= start or now < end
 
 
+def _quota_locked(snapshot: Snapshot) -> bool:
+    """Past the limit, what counts as the quota lock.
+
+    The bulb's own "quota exceeded" always does. The indirect signs (the core
+    entry stuck, the light unavailable) only for a bulb not known to work past
+    the limit: on an immune one they mean something else, and a restart does
+    not cure them."""
+    return snapshot.quota_exceeded or (snapshot.locked and not snapshot.immune)
+
+
 def decide(snapshot: Snapshot, settings: Settings, now: datetime) -> Reason | None:
     """The reason to restart this bulb now, or None."""
     if snapshot.life_s is None:
         return None
     if snapshot.last_restart is not None and now - snapshot.last_restart < MIN_GAP_BETWEEN_RESTARTS:
         return None
-    if settings.repair and (snapshot.hung or (snapshot.life_s >= QUOTA_LIMIT_S and snapshot.locked)):
+    if settings.repair and (snapshot.hung or (snapshot.life_s >= QUOTA_LIMIT_S and _quota_locked(snapshot))):
         return Reason.REPAIR
     if (
         settings.prevent

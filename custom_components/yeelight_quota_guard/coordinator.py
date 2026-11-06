@@ -11,6 +11,7 @@ from typing import Any
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import STATE_UNAVAILABLE
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.storage import Store
@@ -34,6 +35,7 @@ from .const import (
     RESTART_POLL_SECONDS,
     RESTART_WAIT,
     TOKEN_FAILURES_BEFORE_ISSUE,
+    YEELIGHT_DOMAIN,
 )
 from .guard import (
     IMMUNE_AFTER_S,
@@ -322,7 +324,15 @@ class GuardCoordinator(DataUpdateCoordinator[dict[int, BulbState]]):
         locked = state.stuck or state.lan is LanAnswer.LOCKED or state.unavailable_polls >= UNAVAILABLE_POLLS_FOR_LOCK
         # A bulb that still answers over LAN is left to the core integration's own retries.
         hung = state.stuck_polls >= STUCK_POLLS_FOR_HANG and state.lan in (LanAnswer.UNKNOWN, LanAnswer.LOCKED)
-        snapshot = Snapshot(state.life_s, power, state.last_restart, locked, hung, state.immune)
+        snapshot = Snapshot(
+            state.life_s,
+            power,
+            state.last_restart,
+            locked,
+            hung,
+            state.immune,
+            quota_exceeded=state.lan is LanAnswer.LOCKED,
+        )
         return decide(snapshot, self.settings, now)
 
     def _decisions(self, now: datetime) -> list[tuple[int, Reason]]:
@@ -458,21 +468,43 @@ class GuardCoordinator(DataUpdateCoordinator[dict[int, BulbState]]):
         """Skip the core integration's retry back-off once the bulb is fine.
 
         Scheduled, not awaited: the core asks integrations to do it this way,
-        and it cannot raise if the entry is removed meanwhile."""
+        and it cannot raise if the entry is removed meanwhile.
+
+        Also a loaded entry whose light is still unavailable: on 05-11-2026 a
+        bulb came back from its restart with a fresh uptime and Home Assistant
+        still showed it unavailable for hours."""
         link = self.links().get(did)
-        if link is None or link.state not in (
-            ConfigEntryState.SETUP_RETRY,
-            ConfigEntryState.SETUP_ERROR,
-        ):
+        if link is None:
             return
-        self.hass.config_entries.async_schedule_reload(link.entry_id)
+        retrying = link.state in (ConfigEntryState.SETUP_RETRY, ConfigEntryState.SETUP_ERROR)
+        lights = self._core_lights(link)
+        lost = (
+            link.state is ConfigEntryState.LOADED
+            and bool(lights)
+            and all(self._unavailable(entity_id) for entity_id in lights)
+        )
+        if retrying or lost:
+            self.hass.config_entries.async_schedule_reload(link.entry_id)
 
     def _record(self, state: BulbState, reason: Reason, result: str) -> None:
         state.last_result = result
-        self.hass.bus.async_fire(
-            EVENT_RESTARTED,
-            {"bulb": state.name, "did": state.did, "reason": str(reason), "result": result},
+        data: dict[str, Any] = {"bulb": state.name, "did": state.did, "reason": str(reason), "result": result}
+        # The logbook files an event under the device named in its data: this
+        # puts the restart on the bulb's own page.
+        if (device_id := self._device_id(state.did)) is not None:
+            data["device_id"] = device_id
+        self.hass.bus.async_fire(EVENT_RESTARTED, data)
+
+    def _device_id(self, did: int) -> str | None:
+        link = self.links().get(did)
+        if link is None:
+            return None
+        # Ours, where the button and sensors live: since 2026.9 every config
+        # entry has its own device, even for the same identifiers.
+        device = dr.async_get(self.hass).async_get_device_by_identifier(
+            (YEELIGHT_DOMAIN, link.device_identifier), self.config_entry.entry_id
         )
+        return device.id if device else None
 
     # ---- repairs -------------------------------------------------------
 

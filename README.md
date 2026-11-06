@@ -101,7 +101,7 @@ Afterwards, **Configure** on the integration offers:
 
 | Option | Default | What it does |
 |---|---|---|
-| Repair locked bulbs | on | A bulb past 49.7 days that Home Assistant can no longer talk to (its Yeelight entry asks to power cycle it, or its light has been unavailable for two checks in a row) is restarted at once, at any hour: it no longer obeys Home Assistant anyway. So is a younger bulb whose Yeelight entry has asked to power cycle it for two checks in a row while it does not answer on the LAN either (seen after a Home Assistant restart: the bulb never let it back in) |
+| Repair locked bulbs | on | A bulb past 49.7 days that Home Assistant can no longer talk to (its Yeelight entry asks to power cycle it, or its light has been unavailable for two checks in a row) is restarted at once, at any hour: it no longer obeys Home Assistant anyway. So is a younger bulb whose Yeelight entry has asked to power cycle it for two checks in a row while it does not answer on the LAN either (seen after a Home Assistant restart: the bulb never let it back in). A bulb already seen working past the limit is only restarted if it answers "quota exceeded" itself or hangs like that: if it just goes unavailable, the cause is something else and a restart does not cure it. After any restart, if Home Assistant still shows the light unavailable, its Yeelight entry is reloaded |
 | Restart before they lock | on | Bulbs close to the limit are restarted inside the quiet window |
 | Restart after this many days powered on | 45 | Leaves several nights to find the light off |
 | Quiet window | 03:00 – 05:00 | Can cross midnight; the same start and end means all day |
@@ -120,7 +120,8 @@ Each guarded bulb gets three entities, on its own device page, which takes the a
 | **Quota lock expected** | When it would lock if nothing restarted it. *Unknown* for a bulb seen working past the limit: its *Affected by the lock* attribute says *No* |
 | **Restart** | Restart it now over miIO — works even while it is locked |
 
-Every restart fires the event `yeelight_quota_guard_restarted`, with `bulb`, `reason`
+Every restart shows in the **logbook**, on the bulb's device page, with why it was restarted and how it came back.
+It also fires the event `yeelight_quota_guard_restarted`, with `bulb`, `device_id`, `reason`
 (`repair`, `prevent` or `manual`) and `result` (`ok`, `power_restored`, `not_back`, …).
 For example, to get a phone notification:
 
@@ -257,7 +258,7 @@ Después, **Configurar** en la integración ofrece:
 
 | Opción | Por defecto | Qué hace |
 |---|---|---|
-| Arreglar las bombillas bloqueadas | sí | Una bombilla que pasa de 49,7 días y con la que Home Assistant ya no puede hablar (su entrada de Yeelight pide quitarle la corriente, o su luz lleva dos comprobaciones seguidas no disponible) se reinicia en el momento, a cualquier hora: de todas formas ya no obedece a Home Assistant. También una más joven cuya entrada de Yeelight lleva dos comprobaciones seguidas pidiendo quitarle la corriente y que tampoco contesta por la red local (visto tras reiniciar Home Assistant: la bombilla no le dejaba volver a entrar) |
+| Arreglar las bombillas bloqueadas | sí | Una bombilla que pasa de 49,7 días y con la que Home Assistant ya no puede hablar (su entrada de Yeelight pide quitarle la corriente, o su luz lleva dos comprobaciones seguidas no disponible) se reinicia en el momento, a cualquier hora: de todas formas ya no obedece a Home Assistant. También una más joven cuya entrada de Yeelight lleva dos comprobaciones seguidas pidiendo quitarle la corriente y que tampoco contesta por la red local (visto tras reiniciar Home Assistant: la bombilla no le dejaba volver a entrar). Una bombilla que ya se ha visto funcionar pasado el límite solo se reinicia si ella misma contesta «cupo excedido» o se cuelga así: si solo sale no disponible, la causa es otra y reiniciarla no lo arregla. Tras cualquier reinicio, si Home Assistant sigue viendo la luz no disponible, se recarga su entrada de Yeelight |
 | Reiniciar antes de que se bloqueen | sí | Las que se acercan al límite se reinician dentro de la franja tranquila |
 | Reiniciar tras estos días encendida | 45 | Deja varias noches para pillar la luz apagada |
 | Franja tranquila | 03:00 – 05:00 | Puede cruzar la medianoche; el mismo inicio y fin significa todo el día |
@@ -276,7 +277,8 @@ Cada bombilla vigilada tiene tres entidades, en su propia ficha de dispositivo, 
 | **Bloqueo previsto** | Cuándo se bloquearía si nada la reiniciara. *Desconocido* en una bombilla que ya se ha visto funcionar pasado el límite: su atributo *Le afecta el bloqueo* dice *No* |
 | **Reiniciar** | La reinicia ahora por miIO; funciona incluso estando bloqueada |
 
-Cada reinicio lanza el evento `yeelight_quota_guard_restarted`, con `bulb`, `reason`
+Cada reinicio aparece en el **registro**, en la ficha de la bombilla, con el motivo y cómo ha vuelto.
+Además lanza el evento `yeelight_quota_guard_restarted`, con `bulb`, `device_id`, `reason`
 (`repair`, `prevent` o `manual`) y `result` (`ok`, `power_restored`, `not_back`…).
 Por ejemplo, para recibir un aviso en el móvil:
 

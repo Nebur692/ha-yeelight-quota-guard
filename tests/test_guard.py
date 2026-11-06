@@ -124,5 +124,13 @@ def test_quota_lock_time() -> None:
 def test_a_bulb_known_not_to_lock_is_not_prevented() -> None:
     immune = Snapshot(60 * DAY, "off", immune=True)
     assert decide(immune, SETTINGS, NIGHT) is None
-    # Evidence of a lock still wins: what was learnt does not hide a real one.
-    assert decide(Snapshot(60 * DAY, "off", locked=True, immune=True), SETTINGS, NOON) is Reason.REPAIR
+    # 06-11-2026: an immune lamp15 went unavailable and was restarted for it; the
+    # restart did not help. Indirect signs no longer count on an immune bulb...
+    assert decide(Snapshot(60 * DAY, "off", locked=True, immune=True), SETTINGS, NOON) is None
+    # ...but the bulb's own "quota exceeded" does: what was learnt does not hide a real lock.
+    proof = Snapshot(60 * DAY, "off", locked=True, immune=True, quota_exceeded=True)
+    assert decide(proof, SETTINGS, NOON) is Reason.REPAIR
+    # A hang (core entry stuck and silent over LAN) is repaired whatever was learnt.
+    assert decide(Snapshot(60 * DAY, "on", hung=True, immune=True), SETTINGS, NOON) is Reason.REPAIR
+    # And a bulb not known to be immune still counts the indirect signs.
+    assert decide(Snapshot(60 * DAY, "on", locked=True), SETTINGS, NOON) is Reason.REPAIR

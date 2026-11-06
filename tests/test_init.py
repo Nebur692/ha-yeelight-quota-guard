@@ -608,3 +608,68 @@ async def test_diagnostics_hide_tokens_and_addresses(hass: HomeAssistant, bulbs)
     await _setup(hass, entry)
     text = str(await async_get_config_entry_diagnostics(hass, entry))
     assert TOKEN_A not in text and "127.0.0.2" not in text
+
+
+async def test_an_immune_bulb_that_goes_unavailable_is_not_restarted(hass: HomeAssistant, bulbs) -> None:
+    """06-11-2026, a user's lamp15 on 2.0.8_0038: seen working past the limit,
+    then unavailable for another reason. Restarting it did not bring it back."""
+    bulb = await bulbs(host="127.0.0.2", did=10, token=TOKEN_A, life=60 * DAY, power="on", affected=False)
+    yeelight = add_yeelight(hass, 10, "127.0.0.2", "Lamp15")
+    light = _core_light(hass, yeelight, "on")
+    entry = guard_entry(hass, {10: TOKEN_A})
+    await _setup(hass, entry)
+    assert entry.runtime_data.data[10].immune
+
+    hass.states.async_set(light, "unavailable")
+    for _ in range(3):
+        await _refresh(hass, entry)
+    assert entry.runtime_data.data[10].unavailable_polls >= 2  # the sign was there
+    assert bulb.reboots == 0
+
+
+async def test_an_immune_bulb_that_answers_quota_exceeded_is_repaired(hass: HomeAssistant, bulbs) -> None:
+    bulb = await bulbs(host="127.0.0.2", did=10, token=TOKEN_A, life=60 * DAY, power="on", affected=False)
+    yeelight = add_yeelight(hass, 10, "127.0.0.2", "Lamp15")
+    _core_light(hass, yeelight, "on")
+    entry = guard_entry(hass, {10: TOKEN_A})
+    await _setup(hass, entry)
+    assert entry.runtime_data.data[10].immune
+
+    bulb.affected = True  # now it says "client quota exceeded" over LAN
+    await _refresh(hass, entry)
+    assert bulb.reboots == 1
+    assert bulb.power == "on"
+
+
+async def test_a_loaded_entry_whose_light_stays_unavailable_is_reloaded_after_a_restart(
+    hass: HomeAssistant, bulbs
+) -> None:
+    """05-11-2026: back from its restart with a fresh uptime, still unavailable in Home Assistant."""
+    await bulbs(host="127.0.0.2", did=10, token=TOKEN_A, life=DAY, power="on")
+    yeelight = add_yeelight(hass, 10, "127.0.0.2", "Salón 1")
+    light = _core_light(hass, yeelight, "unavailable")
+    await _setup(hass, guard_entry(hass, {10: TOKEN_A}))
+    with patch.object(hass.config_entries, "async_reload", AsyncMock(return_value=True)) as reload:
+        await hass.services.async_call("button", "press", {"entity_id": "button.salon_1_restart"}, blocking=True)
+        await hass.async_block_till_done(wait_background_tasks=True)
+    reload.assert_awaited_once_with(yeelight.entry_id)
+
+    # Its light back on its own: nothing to reload.
+    hass.states.async_set(light, "on")
+    with patch.object(hass.config_entries, "async_reload", AsyncMock(return_value=True)) as reload:
+        await hass.services.async_call("button", "press", {"entity_id": "button.salon_1_restart"}, blocking=True)
+        await hass.async_block_till_done(wait_background_tasks=True)
+    reload.assert_not_awaited()
+
+
+async def test_the_restart_event_names_the_bulb_device(hass: HomeAssistant, bulbs) -> None:
+    await bulbs(host="127.0.0.2", did=10, token=TOKEN_A, life=DAY, power="on")
+    yeelight = add_yeelight(hass, 10, "127.0.0.2", "Salón 1")
+    _core_light(hass, yeelight, "on")
+    await _setup(hass, guard_entry(hass, {10: TOKEN_A}))
+    events = async_capture_events(hass, EVENT_RESTARTED)
+    await hass.services.async_call("button", "press", {"entity_id": "button.salon_1_restart"}, blocking=True)
+    # The page the person opens to press the button is the one the restart lands on.
+    button = er.async_get(hass).async_get("button.salon_1_restart")
+    assert button is not None and button.device_id is not None
+    assert events[-1].data["device_id"] == button.device_id
